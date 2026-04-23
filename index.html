@@ -1,976 +1,1443 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Herbario Digital</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#4a7c59" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Herbario EIA" />
+  <meta name="description" content="Fichas botánicas de campo para la Universidad EIA" />
+  <title>Herbario de Campo · EIA</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-  :root {
-    --verde: #2d5a27;
-    --verde-claro: #4a7c3f;
-    --crema: #f5f0e8;
-    --crema-oscura: #e8e0cc;
-    --marron: #6b4c2a;
-    --marron-claro: #c4a882;
-    --texto: #1a1a1a;
-    --texto-suave: #5a5040;
-    --borde: #b8a88a;
-  }
+  <style>
+    :root {
+      --bg: #F0F7F0;
+      --bg-cream: #FAF6EE;
+      --bg-paper: #F5F0E8;
+      --green-forest: #3D6B4F;
+      --green-mid: #4a7c59;
+      --green-light: #7aab8a;
+      --green-pale: #C8DFC8;
+      --green-mist: #E2EEE2;
+      --eia-blue: #1B4F8A;
+      --eia-blue-light: #3a6faa;
+      --brown-ink: #3a2e1e;
+      --brown-mid: #6b5438;
+      --text-dark: #2c2a24;
+      --text-mid: #4a4640;
+      --text-light: #7a756e;
+      --border: #b8cdb8;
+      --shadow: rgba(61, 107, 79, 0.15);
+      --gold: #b8923a;
+      --gold-light: #d4a853;
+      --serif: 'Playfair Display', Georgia, serif;
+      --body: 'Lora', Georgia, serif;
+      --fine: 'Cormorant Garamond', Georgia, serif;
+    }
 
-  body {
-    font-family: 'IBM Plex Sans', sans-serif;
-    background: #1a1a0f;
-    min-height: 100vh;
-    color: var(--texto);
-    background-image:
-      radial-gradient(ellipse at 20% 50%, rgba(45,90,39,0.15) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 20%, rgba(107,76,42,0.10) 0%, transparent 50%);
-  }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-  /* ENCABEZADO */
-  header {
-    text-align: center;
-    padding: 3rem 2rem 2rem;
-    border-bottom: 1px solid rgba(196,168,130,0.3);
-  }
-  .logo-herb {
-    display: inline-flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 1rem;
-  }
-  .leaf-icon {
-    width: 44px;
-    height: 44px;
-    opacity: 0.9;
-  }
-  header h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    color: var(--crema);
-    letter-spacing: 0.04em;
-    line-height: 1.1;
-  }
-  header h1 em {
-    color: var(--marron-claro);
-    font-style: italic;
-  }
-  header p {
-    font-size: 0.9rem;
-    color: rgba(245,240,232,0.5);
-    margin-top: 0.5rem;
-    font-family: 'IBM Plex Mono', monospace;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
+    html { scroll-behavior: smooth; }
 
-  /* LAYOUT PRINCIPAL */
-  .contenedor {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 2.5rem 1.5rem 4rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2.5rem;
-    align-items: start;
-  }
+    body {
+      font-family: var(--body);
+      background: var(--bg);
+      color: var(--text-dark);
+      min-height: 100dvh;
+      overflow-x: hidden;
+      position: relative;
+    }
 
-  @media (max-width: 760px) {
-    .contenedor { grid-template-columns: 1fr; gap: 1.5rem; }
-  }
+    /* NOISE TEXTURE OVERLAY */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
 
-  /* PANEL FORMULARIO */
-  .panel-form {
-    background: rgba(245,240,232,0.04);
-    border: 1px solid rgba(196,168,130,0.2);
-    border-radius: 4px;
-    padding: 2rem;
-  }
+    /* ── HEADER ── */
+    .app-header {
+      background: linear-gradient(135deg, var(--green-forest) 0%, var(--green-mid) 60%, #2d5a3d 100%);
+      padding: 20px 20px 28px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .app-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M30 0 C20 10 10 20 0 30 C10 40 20 50 30 60 C40 50 50 40 60 30 C50 20 40 10 30 0Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.6;
+    }
+    .header-ornament {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--green-pale);
+      text-transform: uppercase;
+      font-family: var(--fine);
+      opacity: 0.8;
+      margin-bottom: 6px;
+    }
+    .app-title {
+      font-family: var(--serif);
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+    }
+    .app-title em {
+      font-style: italic;
+      color: var(--green-pale);
+      font-size: 22px;
+    }
+    .app-subtitle {
+      font-family: var(--fine);
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+    }
+    .header-line {
+      width: 60px;
+      height: 1px;
+      background: var(--green-pale);
+      margin: 12px auto 0;
+      opacity: 0.5;
+    }
 
-  .panel-form h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    color: var(--marron-claro);
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid rgba(196,168,130,0.2);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+    /* ── STEP INDICATOR ── */
+    .step-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 14px 20px;
+      background: var(--bg-cream);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .step-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--fine);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-light);
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+    .step-dot.active {
+      background: var(--green-forest);
+      border-color: var(--green-forest);
+      color: #fff;
+      transform: scale(1.1);
+    }
+    .step-dot.done {
+      background: var(--green-light);
+      border-color: var(--green-light);
+      color: #fff;
+    }
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      max-width: 40px;
+      transition: background 0.3s ease;
+    }
+    .step-line.done { background: var(--green-light); }
 
-  /* UPLOAD FOTO */
-  .upload-area {
-    border: 2px dashed rgba(196,168,130,0.4);
-    border-radius: 4px;
-    padding: 2rem 1rem;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    margin-bottom: 1.5rem;
-    position: relative;
-    overflow: hidden;
-    min-height: 180px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .upload-area:hover {
-    border-color: var(--marron-claro);
-    background: rgba(196,168,130,0.05);
-  }
-  .upload-area.tiene-foto {
-    border-style: solid;
-    border-color: var(--verde-claro);
-    padding: 0;
-  }
-  .upload-area img.preview {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
-    border-radius: 3px;
-    display: block;
-  }
-  .upload-area input[type="file"] {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-  }
-  .upload-icono {
-    font-size: 2rem;
-    opacity: 0.4;
-  }
-  .upload-texto {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    color: rgba(245,240,232,0.4);
-    letter-spacing: 0.05em;
-  }
-  .upload-overlay {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: rgba(26,26,15,0.7);
-    padding: 6px;
-    font-size: 0.7rem;
-    color: var(--marron-claro);
-    font-family: 'IBM Plex Mono', monospace;
-    text-align: center;
-  }
+    /* ── CONTENT AREA ── */
+    .content {
+      padding: 20px 16px 100px;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
 
-  /* CAMPOS */
-  .campo {
-    margin-bottom: 1rem;
-  }
-  .campo label {
-    display: block;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(196,168,130,0.8);
-    margin-bottom: 5px;
-  }
-  .campo input,
-  .campo select,
-  .campo textarea {
-    width: 100%;
-    background: rgba(245,240,232,0.05);
-    border: 1px solid rgba(196,168,130,0.25);
-    border-radius: 3px;
-    padding: 8px 10px;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 0.88rem;
-    color: var(--crema);
-    outline: none;
-    transition: border-color 0.2s;
-    appearance: none;
-  }
-  .campo input:focus,
-  .campo select:focus,
-  .campo textarea:focus {
-    border-color: var(--marron-claro);
-    background: rgba(196,168,130,0.06);
-  }
-  .campo textarea {
-    resize: vertical;
-    min-height: 70px;
-    line-height: 1.5;
-  }
-  .campo select option {
-    background: #2a2018;
-    color: var(--crema);
-  }
+    /* ── CARDS ── */
+    .card {
+      background: var(--bg-cream);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 12px var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--green-forest), var(--green-light));
+    }
+    .card-title {
+      font-family: var(--serif);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--green-forest);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title .icon { font-size: 20px; }
 
-  .fila-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-  }
+    /* ── STEPS (views) ── */
+    .step-view { display: none; }
+    .step-view.active { display: block; animation: fadeInUp 0.35s ease; }
 
-  .separador {
-    font-family: 'Playfair Display', serif;
-    font-size: 0.9rem;
-    color: var(--marron-claro);
-    margin: 1.5rem 0 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(196,168,130,0.15);
-    font-style: italic;
-    opacity: 0.8;
-  }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
-  /* CHECKBOX GRUPOS */
-  .grupo-check {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .chip-check {
-    position: relative;
-  }
-  .chip-check input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
-    width: 0; height: 0;
-  }
-  .chip-check label {
-    display: inline-block;
-    padding: 4px 10px;
-    border: 1px solid rgba(196,168,130,0.3);
-    border-radius: 2px;
-    font-size: 0.75rem;
-    font-family: 'IBM Plex Mono', monospace;
-    color: rgba(245,240,232,0.5);
-    cursor: pointer;
-    transition: all 0.15s;
-    text-transform: none;
-    letter-spacing: 0;
-  }
-  .chip-check input:checked + label {
-    background: var(--verde);
-    border-color: var(--verde-claro);
-    color: var(--crema);
-  }
+    /* ── STEP HEADER ── */
+    .step-header {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .step-num {
+      font-family: var(--fine);
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green-light);
+      margin-bottom: 4px;
+    }
+    .step-title {
+      font-family: var(--serif);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--green-forest);
+      font-style: italic;
+      line-height: 1.2;
+    }
+    .step-desc {
+      font-size: 13px;
+      color: var(--text-light);
+      margin-top: 6px;
+      line-height: 1.5;
+      font-style: italic;
+    }
 
-  /* BOTÓN */
-  .btn-generar {
-    width: 100%;
-    margin-top: 1.5rem;
-    padding: 12px;
-    background: var(--verde);
-    border: 1px solid var(--verde-claro);
-    border-radius: 3px;
-    color: var(--crema);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.85rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .btn-generar:hover { background: var(--verde-claro); }
+    /* ── PHOTO ZONE ── */
+    .photo-zone {
+      width: 100%;
+      min-height: 220px;
+      border-radius: 14px;
+      border: 2px dashed var(--green-light);
+      background: var(--green-mist);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      overflow: hidden;
+      position: relative;
+    }
+    .photo-zone:active { transform: scale(0.98); background: var(--green-pale); }
+    .photo-zone img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+    }
+    .photo-zone-icon { font-size: 48px; opacity: 0.5; }
+    .photo-zone-text {
+      font-family: var(--fine);
+      font-size: 15px;
+      color: var(--green-forest);
+      text-align: center;
+      font-style: italic;
+    }
+    .photo-zone-sub {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    .photo-overlay {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: #fff;
+      display: none;
+    }
+    .photo-zone.has-photo .photo-overlay { display: block; }
+    #photoInput { display: none; }
 
-  /* PANEL FICHA */
-  .panel-ficha {
-    position: sticky;
-    top: 2rem;
-  }
+    /* ── FORM INPUTS ── */
+    .form-group { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-family: var(--fine);
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      color: var(--green-forest);
+      margin-bottom: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    input[type="text"], textarea, select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      font-family: var(--body);
+      font-size: 16px;
+      color: var(--text-dark);
+      appearance: none;
+      -webkit-appearance: none;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus {
+      border-color: var(--green-forest);
+      box-shadow: 0 0 0 3px rgba(61,107,79,0.12);
+    }
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--green-forest);
+      pointer-events: none;
+      font-size: 16px;
+    }
 
-  /* LA FICHA */
-  #ficha {
-    background: var(--crema);
-    border: 1px solid var(--borde);
-    box-shadow: 4px 4px 0 rgba(107,76,42,0.2), 8px 8px 0 rgba(107,76,42,0.1);
-    border-radius: 2px;
-    overflow: hidden;
-    font-family: 'IBM Plex Sans', sans-serif;
-    color: var(--texto);
-    min-height: 500px;
-  }
+    /* ── ICON SELECTORS ── */
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .icon-grid.two-col { grid-template-columns: repeat(2, 1fr); }
+    .icon-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 8px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      gap: 6px;
+      min-height: 80px;
+    }
+    .icon-btn:active { transform: scale(0.95); }
+    .icon-btn.selected {
+      border-color: var(--green-forest);
+      background: var(--green-mist);
+      box-shadow: 0 0 0 3px rgba(61,107,79,0.12);
+    }
+    .icon-btn .big-icon { font-size: 32px; line-height: 1; }
+    .icon-btn .btn-label {
+      font-family: var(--fine);
+      font-size: 12px;
+      text-align: center;
+      color: var(--text-mid);
+      line-height: 1.2;
+    }
+    .icon-btn.selected .btn-label { color: var(--green-forest); font-weight: 600; }
 
-  .ficha-header {
-    background: var(--verde);
-    padding: 1.2rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .ficha-header-left h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.4rem;
-    color: var(--crema);
-    line-height: 1.2;
-  }
-  .ficha-header-left h3 em {
-    font-size: 0.95rem;
-    font-style: italic;
-    opacity: 0.75;
-    display: block;
-    font-weight: 400;
-  }
-  .ficha-num {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    color: rgba(245,240,232,0.5);
-    text-align: right;
-    line-height: 1.6;
-  }
+    /* ── LEAF SHAPES ── */
+    .leaf-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .leaf-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .leaf-btn:active { transform: scale(0.97); }
+    .leaf-btn.selected {
+      border-color: var(--green-forest);
+      background: var(--green-mist);
+    }
+    .leaf-svg { width: 36px; height: 36px; flex-shrink: 0; }
+    .leaf-name {
+      font-family: var(--fine);
+      font-size: 14px;
+      color: var(--text-mid);
+      font-style: italic;
+    }
+    .leaf-btn.selected .leaf-name { color: var(--green-forest); font-weight: 600; }
 
-  .ficha-foto {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
-    display: block;
-    border-bottom: 2px solid var(--borde);
-  }
-  .ficha-foto-placeholder {
-    width: 100%;
-    height: 180px;
-    background: var(--crema-oscura);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 8px;
-    border-bottom: 2px solid var(--borde);
-    color: rgba(90,80,64,0.4);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-  }
+    /* ── COLOR PICKER ── */
+    .color-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .color-dot {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.2s ease;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .color-dot:active { transform: scale(0.9); }
+    .color-dot.selected {
+      border-color: var(--green-forest);
+      transform: scale(1.15);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
 
-  .ficha-body {
-    padding: 1.2rem 1.5rem;
-  }
+    /* ── SECTION DIVIDER ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0 14px;
+    }
+    .divider-line { flex: 1; height: 1px; background: var(--border); }
+    .divider-text {
+      font-family: var(--fine);
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-light);
+      white-space: nowrap;
+    }
 
-  .ficha-seccion {
-    margin-bottom: 1.2rem;
-    padding-bottom: 1.2rem;
-    border-bottom: 1px solid var(--crema-oscura);
-  }
-  .ficha-seccion:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-  }
-  .ficha-seccion-titulo {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.62rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--verde);
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .ficha-seccion-titulo::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--crema-oscura);
-  }
+    /* ── BOTTOM NAV BUTTONS ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      padding: 12px 20px 20px;
+      background: linear-gradient(to top, var(--bg) 70%, transparent);
+      display: flex;
+      gap: 12px;
+      max-width: 480px;
+      margin: 0 auto;
+      z-index: 200;
+    }
+    .btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: 14px;
+      border: none;
+      font-family: var(--fine);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--green-forest), var(--green-mid));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(61,107,79,0.35);
+    }
+    .btn-secondary {
+      background: #fff;
+      color: var(--green-forest);
+      border: 2px solid var(--border);
+    }
+    .btn-blue {
+      background: linear-gradient(135deg, var(--eia-blue), var(--eia-blue-light));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(27,79,138,0.3);
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #8b6914, var(--gold));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(184,146,58,0.35);
+    }
+    .btn-sm {
+      padding: 12px 18px;
+      font-size: 14px;
+      flex: none;
+    }
 
-  .ficha-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px 16px;
-  }
-  .ficha-campo {
-    font-size: 0.82rem;
-  }
-  .ficha-campo .etiqueta {
-    font-size: 0.65rem;
-    color: var(--texto-suave);
-    font-family: 'IBM Plex Mono', monospace;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .ficha-campo .valor {
-    color: var(--texto);
-    font-weight: 500;
-    line-height: 1.4;
-    word-break: break-word;
-  }
-  .ficha-campo .valor:empty::after {
-    content: '—';
-    opacity: 0.3;
-  }
+    /* ── FICHA GENERADA ── */
+    #fichaPreview { display: none; }
+    #fichaPreview.active { display: block; animation: fadeInUp 0.5s ease; }
 
-  .ficha-full .valor {
-    line-height: 1.6;
-    font-size: 0.83rem;
-  }
+    .ficha-container {
+      background: var(--bg-paper);
+      border-radius: 4px;
+      border: 1.5px solid #c8b898;
+      padding: 0;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+      position: relative;
+    }
 
-  .tags-ficha {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: 3px;
-  }
-  .tag-ficha {
-    background: var(--crema-oscura);
-    border: 1px solid var(--borde);
-    border-radius: 2px;
-    padding: 2px 8px;
-    font-size: 0.72rem;
-    color: var(--marron);
-    font-family: 'IBM Plex Mono', monospace;
-  }
+    /* Paper texture */
+    .ficha-container::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 27px,
+        rgba(180,160,120,0.08) 27px,
+        rgba(180,160,120,0.08) 28px
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
 
-  .ficha-footer {
-    background: var(--crema-oscura);
-    padding: 0.7rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid var(--borde);
-  }
-  .ficha-footer span {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--texto-suave);
-    opacity: 0.7;
-  }
-  .ficha-footer .sello {
-    width: 32px;
-    height: 32px;
-    border: 2px solid var(--verde);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.3;
-  }
+    .ficha-header {
+      background: linear-gradient(135deg, var(--green-forest) 0%, #2d5a3d 100%);
+      padding: 20px 18px 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .ficha-header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .ficha-institution {
+      font-family: var(--fine);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+    }
+    .ficha-num {
+      font-family: var(--fine);
+      font-size: 10px;
+      color: rgba(255,255,255,0.5);
+      text-align: right;
+    }
+    .ficha-title {
+      font-family: var(--serif);
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      font-style: italic;
+      line-height: 1.2;
+    }
+    .ficha-subtitle {
+      font-family: var(--fine);
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 4px;
+      letter-spacing: 0.5px;
+    }
+    .ficha-header-ornament {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+    }
+    .ficha-badge {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-family: var(--fine);
+      font-size: 10px;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.5px;
+    }
 
-  /* BOTONES ACCIÓN */
-  .acciones {
-    display: flex;
-    gap: 8px;
-    margin-top: 1rem;
-  }
-  .btn-accion {
-    flex: 1;
-    padding: 9px 12px;
-    border: 1px solid rgba(196,168,130,0.3);
-    border-radius: 3px;
-    background: transparent;
-    color: rgba(245,240,232,0.6);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.06em;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.15s;
-  }
-  .btn-accion:hover {
-    border-color: var(--marron-claro);
-    color: var(--crema);
-    background: rgba(196,168,130,0.08);
-  }
-  .btn-accion.primario {
-    background: rgba(45,90,39,0.3);
-    border-color: var(--verde-claro);
-    color: var(--crema);
-  }
-  .btn-accion.primario:hover { background: rgba(45,90,39,0.5); }
+    .ficha-photo {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block;
+      position: relative;
+      z-index: 1;
+    }
+    .ficha-photo-placeholder {
+      width: 100%;
+      height: 160px;
+      background: var(--green-mist);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: var(--green-pale);
+      position: relative;
+      z-index: 1;
+    }
+    .ficha-body {
+      padding: 18px;
+      position: relative;
+      z-index: 1;
+    }
+    .ficha-plant-name {
+      font-family: var(--serif);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--green-forest);
+      font-style: italic;
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+    .ficha-collector {
+      font-family: var(--fine);
+      font-size: 12px;
+      color: var(--text-light);
+      margin-bottom: 14px;
+    }
+    .ficha-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .ficha-tag {
+      background: var(--green-mist);
+      border: 1px solid var(--green-pale);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-family: var(--fine);
+      font-size: 11px;
+      color: var(--green-forest);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .ficha-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 12px 0;
+    }
+    .ficha-section-title {
+      font-family: var(--fine);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--brown-mid);
+      margin-bottom: 8px;
+    }
+    .ficha-obs-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .ficha-obs-chip {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-family: var(--fine);
+      font-size: 12px;
+      color: var(--text-mid);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .ficha-reflexion {
+      background: #fff;
+      border-left: 3px solid var(--green-light);
+      border-radius: 0 8px 8px 0;
+      padding: 12px 14px;
+      font-family: var(--body);
+      font-size: 13px;
+      font-style: italic;
+      color: var(--text-mid);
+      line-height: 1.6;
+    }
+    .ficha-color-dot {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.15);
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+    .ficha-footer {
+      background: var(--green-mist);
+      border-top: 1px solid var(--border);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
+    }
+    .ficha-footer-data {
+      font-family: var(--fine);
+      font-size: 10px;
+      color: var(--text-light);
+      line-height: 1.5;
+    }
+    .ficha-footer-logo {
+      font-family: var(--serif);
+      font-size: 13px;
+      font-style: italic;
+      color: var(--green-forest);
+      font-weight: 700;
+      text-align: right;
+    }
+    .ficha-footer-logo span {
+      display: block;
+      font-family: var(--fine);
+      font-size: 9px;
+      font-style: normal;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
 
-  .estado-inicial {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 12px;
-    min-height: 400px;
-    text-align: center;
-    padding: 2rem;
-  }
-  .estado-inicial svg { opacity: 0.12; }
-  .estado-inicial p {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    color: rgba(245,240,232,0.3);
-    letter-spacing: 0.06em;
-    line-height: 1.8;
-  }
+    /* ── COLOR SWATCHES DATA ── */
+    .color-swatch-display {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 1px solid rgba(0,0,0,0.15);
+      vertical-align: middle;
+      margin-right: 4px;
+    }
 
-  @media print {
-    body { background: white; }
-    .panel-form, .panel-form h2, header, .acciones { display: none !important; }
-    .contenedor { grid-template-columns: 1fr; }
-    #ficha { box-shadow: none; }
-    .panel-ficha { position: static; }
-  }
-</style>
+    /* ── INTRO SPLASH ── */
+    .splash {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(160deg, var(--green-forest) 0%, #1e3d28 100%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .splash.hidden { opacity: 0; transform: scale(1.05); pointer-events: none; }
+    .splash-icon { font-size: 72px; margin-bottom: 20px; animation: float 3s ease-in-out infinite; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .splash-title {
+      font-family: var(--serif);
+      font-size: 32px;
+      font-weight: 700;
+      font-style: italic;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .splash-sub {
+      font-family: var(--fine);
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      letter-spacing: 1px;
+      margin-bottom: 40px;
+    }
+    .splash-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: 50px;
+      padding: 16px 36px;
+      font-family: var(--fine);
+      font-size: 16px;
+      color: #fff;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+    }
+    .splash-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.97); }
+    .splash-tagline {
+      margin-top: 28px;
+      font-family: var(--fine);
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      text-align: center;
+      font-style: italic;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── INSTALL BANNER ── */
+    .install-banner {
+      background: linear-gradient(135deg, var(--eia-blue), var(--eia-blue-light));
+      margin: 0 0 16px;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+    }
+    .install-banner.show { display: flex; }
+    .install-banner-text {
+      flex: 1;
+      font-family: var(--fine);
+      font-size: 13px;
+      color: #fff;
+      line-height: 1.4;
+    }
+    .install-banner-text strong { font-size: 14px; display: block; }
+    .install-banner-btn {
+      background: #fff;
+      color: var(--eia-blue);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-family: var(--fine);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--green-forest);
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 50px;
+      font-family: var(--fine);
+      font-size: 14px;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 9000;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .helper-text {
+      font-family: var(--fine);
+      font-size: 12px;
+      color: var(--text-light);
+      font-style: italic;
+      margin-top: 5px;
+    }
+
+    .required-star { color: var(--gold); }
+  </style>
 </head>
 <body>
 
-<header>
-  <div class="logo-herb">
-    <svg class="leaf-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M22 4C22 4 8 10 8 24C8 32 14.5 38 22 38C29.5 38 36 32 36 24C36 10 22 4 22 4Z" fill="#4a7c3f" opacity="0.8"/>
-      <path d="M22 38V18" stroke="#2d5a27" stroke-width="1.5" stroke-linecap="round"/>
-      <path d="M22 26C22 26 16 22 14 18" stroke="#2d5a27" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
-      <path d="M22 22C22 22 28 18 30 14" stroke="#2d5a27" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
-    </svg>
-    <h1>Herbario <em>Digital</em></h1>
-  </div>
-  <p>Registro botánico — Ficha técnica de especímenes</p>
-</header>
-
-<div class="contenedor">
-  <!-- FORMULARIO -->
-  <div class="panel-form">
-    <h2>
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="1" stroke="currentColor" stroke-width="1.2"/><line x1="4" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1.2"/><line x1="4" y1="8" x2="8" y2="8" stroke="currentColor" stroke-width="1.2"/></svg>
-      Registro del espécimen
-    </h2>
-
-    <!-- FOTO -->
-    <div class="upload-area" id="uploadArea">
-      <input type="file" accept="image/*" id="inputFoto" onchange="cargarFoto(event)">
-      <div class="upload-icono" id="uploadIcono">🌿</div>
-      <div class="upload-texto" id="uploadTexto">Haz clic para subir la foto de la planta</div>
-      <img class="preview" id="previewFoto" style="display:none;" alt="Espécimen">
-      <div class="upload-overlay" id="uploadOverlay" style="display:none;">Click para cambiar foto</div>
-    </div>
-
-    <!-- IDENTIFICACIÓN -->
-    <div class="separador">I. Identificación taxonómica</div>
-    <div class="campo">
-      <label>Nombre común *</label>
-      <input type="text" id="nombreComun" placeholder="Ej: Helecho arbóreo, Orquídea">
-    </div>
-    <div class="campo">
-      <label>Nombre científico (especie)</label>
-      <input type="text" id="nombreCientifico" placeholder="Ej: Cyathea caracasana">
-    </div>
-    <div class="fila-2">
-      <div class="campo">
-        <label>Familia botánica</label>
-        <input type="text" id="familia" placeholder="Ej: Cyatheaceae">
-      </div>
-      <div class="campo">
-        <label>División / Clase</label>
-        <select id="division">
-          <option value="">Seleccionar</option>
-          <option>Angiospermas</option>
-          <option>Gimnospermas</option>
-          <option>Pteridofitas (helechos)</option>
-          <option>Briofitas (musgos)</option>
-          <option>Líquenes</option>
-          <option>Otro</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- MORFOLOGÍA -->
-    <div class="separador">II. Características morfológicas</div>
-    <div class="campo">
-      <label>Tipo de planta</label>
-      <select id="tipoPlanta">
-        <option value="">Seleccionar</option>
-        <option>Árbol</option>
-        <option>Arbusto</option>
-        <option>Hierba</option>
-        <option>Trepadora / Liana</option>
-        <option>Epífita</option>
-        <option>Acuática</option>
-        <option>Parásita</option>
-        <option>Suculenta / Cactus</option>
-        <option>Hongo / Musgo / Liquen</option>
-      </select>
-    </div>
-    <div class="campo">
-      <label>Color de flores / frutos</label>
-      <div class="grupo-check">
-        <div class="chip-check"><input type="checkbox" id="c-blanco" value="Blanco"><label for="c-blanco">Blanco</label></div>
-        <div class="chip-check"><input type="checkbox" id="c-amarillo" value="Amarillo"><label for="c-amarillo">Amarillo</label></div>
-        <div class="chip-check"><input type="checkbox" id="c-naranja" value="Naranja"><label for="c-naranja">Naranja</label></div>
-        <div class="chip-check"><input type="checkbox" id="c-rojo" value="Rojo"><label for="c-rojo">Rojo</label></div>
-        <div class="chip-check"><input type="checkbox" id="c-rosado" value="Rosado"><label for="c-rosado">Rosado</label></div>
-        <div class="chip-check"><input type="checkbox" id="c-morado" value="Morado"><label for="c-morado">Morado</label></div>
-        <div class="chip-check"><input type="checkbox" id="c-azul" value="Azul"><label for="c-azul">Azul</label></div>
-        <div class="chip-check"><input type="checkbox" id="c-verde" value="Verde"><label for="c-verde">Verde</label></div>
-        <div class="chip-check"><input type="checkbox" id="c-cafe" value="Café"><label for="c-cafe">Café</label></div>
-        <div class="chip-check"><input type="checkbox" id="c-sin" value="Sin flor/fruto"><label for="c-sin">Sin flor/fruto</label></div>
-      </div>
-    </div>
-    <div class="fila-2">
-      <div class="campo">
-        <label>Forma de hoja</label>
-        <select id="formaHoja">
-          <option value="">Seleccionar</option>
-          <option>Lanceolada</option>
-          <option>Ovalada / Elíptica</option>
-          <option>Redondeada</option>
-          <option>Lineal</option>
-          <option>Palmada / Lobulada</option>
-          <option>Pinnada (compuesta)</option>
-          <option>Acicular (aguja)</option>
-          <option>Sin hojas visibles</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label>Borde de hoja</label>
-        <select id="bordeHoja">
-          <option value="">Seleccionar</option>
-          <option>Entero (liso)</option>
-          <option>Serrado (dentado)</option>
-          <option>Lobulado</option>
-          <option>Ondulado</option>
-          <option>Espinoso</option>
-        </select>
-      </div>
-    </div>
-    <div class="campo">
-      <label>Altura aproximada</label>
-      <select id="altura">
-        <option value="">Seleccionar</option>
-        <option>Menos de 20 cm</option>
-        <option>20 cm – 1 m</option>
-        <option>1 – 5 m</option>
-        <option>5 – 15 m</option>
-        <option>Más de 15 m</option>
-      </select>
-    </div>
-
-    <!-- HÁBITAT -->
-    <div class="separador">III. Hábitat y recolección</div>
-    <div class="fila-2">
-      <div class="campo">
-        <label>Lugar de recolección</label>
-        <input type="text" id="lugar" placeholder="Ej: Cali, Valle del Cauca">
-      </div>
-      <div class="campo">
-        <label>Fecha</label>
-        <input type="date" id="fecha">
-      </div>
-    </div>
-    <div class="campo">
-      <label>Tipo de ecosistema / hábitat</label>
-      <select id="habitat">
-        <option value="">Seleccionar</option>
-        <option>Bosque húmedo tropical</option>
-        <option>Bosque andino / Nublado</option>
-        <option>Páramo</option>
-        <option>Zona seca / Xerofítica</option>
-        <option>Ribera de río / Pantano</option>
-        <option>Jardín / Zona urbana</option>
-        <option>Potrero / Zona intervenida</option>
-        <option>Cultivo agrícola</option>
-        <option>Otro</option>
-      </select>
-    </div>
-    <div class="fila-2">
-      <div class="campo">
-        <label>Altitud (m.s.n.m.)</label>
-        <input type="number" id="altitud" placeholder="Ej: 1000">
-      </div>
-      <div class="campo">
-        <label>Exposición solar</label>
-        <select id="exposicion">
-          <option value="">Seleccionar</option>
-          <option>Pleno sol</option>
-          <option>Semisombra</option>
-          <option>Sombra completa</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- OBSERVACIONES -->
-    <div class="separador">IV. Observaciones</div>
-    <div class="campo">
-      <label>Usos conocidos (medicinal, alimenticio, decorativo…)</label>
-      <textarea id="usos" placeholder="Ej: Sus hojas se usan para tratar infecciones respiratorias..."></textarea>
-    </div>
-    <div class="campo">
-      <label>Observaciones adicionales</label>
-      <textarea id="observaciones" placeholder="Características especiales, estado de conservación, aroma, textura..."></textarea>
-    </div>
-    <div class="campo">
-      <label>Nombre del recolector / Estudiante</label>
-      <input type="text" id="colector" placeholder="Tu nombre completo">
-    </div>
-    <div class="campo">
-      <label>Institución / Curso</label>
-      <input type="text" id="institucion" placeholder="Ej: Universidad del Valle – Botánica 2025">
-    </div>
-
-    <button class="btn-generar" onclick="generarFicha()">Generar ficha de herbario</button>
-  </div>
-
-  <!-- PANEL FICHA -->
-  <div class="panel-ficha">
-    <div id="fichaContenedor">
-      <div id="fichaEstadoInicial" class="estado-inicial">
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-          <path d="M40 8C40 8 16 20 16 44C16 60 26 70 40 70C54 70 64 60 64 44C64 20 40 8 40 8Z" fill="#4a7c3f"/>
-          <path d="M40 70V32" stroke="#2d5a27" stroke-width="3" stroke-linecap="round"/>
-          <path d="M40 48C40 48 30 42 26 34" stroke="#2d5a27" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
-          <path d="M40 38C40 38 50 32 54 24" stroke="#2d5a27" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
-        </svg>
-        <p>Completa el formulario<br>y presiona <strong style="color:rgba(196,168,130,0.6)">"Generar ficha"</strong><br>para ver tu entrada de herbario</p>
-      </div>
-      <div id="fichaReal" style="display:none;">
-        <div id="ficha">
-          <div class="ficha-header">
-            <div class="ficha-header-left">
-              <h3 id="f-nombreComun">—<em id="f-nombreCientifico"></em></h3>
-            </div>
-            <div class="ficha-num">
-              <div id="f-num">HB-001</div>
-              <div id="f-fecha">—</div>
-            </div>
-          </div>
-          <div id="f-fotoContenedor">
-            <div class="ficha-foto-placeholder">
-              <span>🌿</span>
-              <span>Sin fotografía</span>
-            </div>
-          </div>
-          <div class="ficha-body">
-            <div class="ficha-seccion">
-              <div class="ficha-seccion-titulo">Taxonomía</div>
-              <div class="ficha-grid">
-                <div class="ficha-campo">
-                  <div class="etiqueta">Familia</div>
-                  <div class="valor" id="f-familia"></div>
-                </div>
-                <div class="ficha-campo">
-                  <div class="etiqueta">División</div>
-                  <div class="valor" id="f-division"></div>
-                </div>
-                <div class="ficha-campo">
-                  <div class="etiqueta">Tipo</div>
-                  <div class="valor" id="f-tipo"></div>
-                </div>
-                <div class="ficha-campo">
-                  <div class="etiqueta">Altura</div>
-                  <div class="valor" id="f-altura"></div>
-                </div>
-              </div>
-            </div>
-            <div class="ficha-seccion">
-              <div class="ficha-seccion-titulo">Morfología</div>
-              <div class="ficha-grid">
-                <div class="ficha-campo">
-                  <div class="etiqueta">Forma de hoja</div>
-                  <div class="valor" id="f-formaHoja"></div>
-                </div>
-                <div class="ficha-campo">
-                  <div class="etiqueta">Borde de hoja</div>
-                  <div class="valor" id="f-bordeHoja"></div>
-                </div>
-              </div>
-              <div class="ficha-campo" style="margin-top:8px;">
-                <div class="etiqueta">Color de flores / frutos</div>
-                <div class="tags-ficha" id="f-colores"></div>
-              </div>
-            </div>
-            <div class="ficha-seccion">
-              <div class="ficha-seccion-titulo">Recolección</div>
-              <div class="ficha-grid">
-                <div class="ficha-campo">
-                  <div class="etiqueta">Lugar</div>
-                  <div class="valor" id="f-lugar"></div>
-                </div>
-                <div class="ficha-campo">
-                  <div class="etiqueta">Altitud</div>
-                  <div class="valor" id="f-altitud"></div>
-                </div>
-                <div class="ficha-campo ficha-full" style="grid-column: span 2;">
-                  <div class="etiqueta">Hábitat</div>
-                  <div class="valor" id="f-habitat"></div>
-                </div>
-                <div class="ficha-campo">
-                  <div class="etiqueta">Exposición</div>
-                  <div class="valor" id="f-exposicion"></div>
-                </div>
-              </div>
-            </div>
-            <div class="ficha-seccion" id="seccionUsos">
-              <div class="ficha-seccion-titulo">Usos y observaciones</div>
-              <div class="ficha-campo ficha-full">
-                <div class="etiqueta">Usos conocidos</div>
-                <div class="valor" id="f-usos"></div>
-              </div>
-              <div class="ficha-campo ficha-full" style="margin-top:8px;">
-                <div class="etiqueta">Observaciones</div>
-                <div class="valor" id="f-observaciones"></div>
-              </div>
-            </div>
-          </div>
-          <div class="ficha-footer">
-            <span id="f-colector">—</span>
-            <div class="sello">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <circle cx="7" cy="7" r="5" stroke="#2d5a27" stroke-width="1.2"/>
-                <path d="M7 4v3l2 1.5" stroke="#2d5a27" stroke-width="1" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <span id="f-institucion">—</span>
-          </div>
-        </div>
-        <div class="acciones">
-          <button class="btn-accion" onclick="limpiarFicha()">Limpiar</button>
-          <button class="btn-accion" onclick="window.print()">Imprimir</button>
-          <button class="btn-accion primario" onclick="descargarFicha()">Descargar imagen</button>
-        </div>
-      </div>
-    </div>
+<!-- SPLASH -->
+<div class="splash" id="splash">
+  <div class="splash-icon">🌿</div>
+  <div class="splash-title">Herbario de Campo</div>
+  <div class="splash-sub">Universidad EIA · Bosque Andino</div>
+  <button class="splash-btn" onclick="hideSplash()">Comenzar recorrido →</button>
+  <div class="splash-tagline">
+    "El mundo no será destruido por los que hacen el mal,<br>sino por los que los miran sin hacer nada."<br>
+    <em style="font-size:10px;opacity:0.6">— A. von Humboldt, inspiración</em>
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script>
-let fotoDataURL = null;
-let fichaCount = 1;
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
-function cargarFoto(event) {
-  const file = event.target.files[0];
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-ornament">Universidad EIA · 2.150 m.s.n.m.</div>
+  <div class="app-title">Herbario<br><em>de Campo</em></div>
+  <div class="app-subtitle">Bosque Andino · Envigado, Colombia</div>
+  <div class="header-line"></div>
+</header>
+
+<!-- STEP BAR -->
+<div class="step-bar" id="stepBar">
+  <div class="step-dot active" id="dot1">1</div>
+  <div class="step-line" id="line12"></div>
+  <div class="step-dot" id="dot2">2</div>
+  <div class="step-line" id="line23"></div>
+  <div class="step-dot" id="dot3">3</div>
+  <div class="step-line" id="line34"></div>
+  <div class="step-dot" id="dot4">4</div>
+  <div class="step-line" id="line45"></div>
+  <div class="step-dot" id="dot5">✦</div>
+</div>
+
+<!-- MAIN CONTENT -->
+<main class="content">
+
+  <!-- INSTALL BANNER -->
+  <div class="install-banner" id="installBanner">
+    <div style="font-size:24px">📲</div>
+    <div class="install-banner-text">
+      <strong>Instalar App</strong>
+      Úsala sin internet en los senderos
+    </div>
+    <button class="install-banner-btn" onclick="installApp()">Instalar</button>
+  </div>
+
+  <!-- ──────── STEP 1: FOTO ──────── -->
+  <div class="step-view active" id="step1">
+    <div class="step-header">
+      <div class="step-num">Paso 1 de 4</div>
+      <div class="step-title">La fotografía</div>
+      <div class="step-desc">Captura la planta que llamó tu atención en este camino.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">📷</span> Foto de la Planta</div>
+      <div class="photo-zone" id="photoZone" onclick="document.getElementById('photoInput').click()">
+        <div class="photo-zone-icon" id="photoIcon">🌱</div>
+        <div class="photo-zone-text" id="photoText">Toca para fotografiar</div>
+        <div class="photo-zone-sub" id="photoSub">o seleccionar de la galería</div>
+        <div class="photo-overlay" id="photoOverlay">✏️ Cambiar foto</div>
+      </div>
+      <input type="file" id="photoInput" accept="image/*" capture="environment" onchange="handlePhoto(event)" />
+      <p class="helper-text" style="margin-top:10px;text-align:center">💡 La foto es la firma visual de tu ficha botánica</p>
+    </div>
+  </div>
+
+  <!-- ──────── STEP 2: DATOS ──────── -->
+  <div class="step-view" id="step2">
+    <div class="step-header">
+      <div class="step-num">Paso 2 de 4</div>
+      <div class="step-title">Datos del hallazgo</div>
+      <div class="step-desc">¿Quién la encontró y cómo se llama? No importa si no sabes el nombre científico.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🔖</span> Identificación</div>
+
+      <div class="form-group">
+        <label>Tu nombre <span class="required-star">*</span></label>
+        <input type="text" id="studentName" placeholder="Ej: María Torres" />
+      </div>
+
+      <div class="form-group">
+        <label>Nombre de la planta <span class="required-star">*</span></label>
+        <input type="text" id="plantName" placeholder="Ej: Helecho arborescente / Cyathea sp." />
+        <p class="helper-text">Puede ser el nombre común o científico</p>
+      </div>
+
+      <div class="form-group">
+        <label>Zona EIA <span class="required-star">*</span></label>
+        <div class="select-wrap">
+          <select id="zona">
+            <option value="">— Selecciona la zona —</option>
+            <option value="Sendero Quebrada">🌊 Sendero Quebrada</option>
+            <option value="Sendero Bosque Alto">🌲 Sendero Bosque Alto</option>
+            <option value="Sendero Principal">🥾 Sendero Principal</option>
+            <option value="Zona de Bloques">🏛️ Zona de Bloques</option>
+            <option value="Jardín Exterior">🌸 Jardín Exterior</option>
+            <option value="Laboratorios">🔬 Zona de Laboratorios</option>
+            <option value="Orilla del Campus">🌿 Orilla del Campus</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ──────── STEP 3: OBSERVACIONES ──────── -->
+  <div class="step-view" id="step3">
+    <div class="step-header">
+      <div class="step-num">Paso 3 de 4</div>
+      <div class="step-title">Lo que observas</div>
+      <div class="step-desc">Usa tus sentidos, no tu manual de botánica.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🌳</span> ¿Qué tipo de planta es?</div>
+      <div class="icon-grid" id="tipoGrid">
+        <div class="icon-btn" data-group="tipo" data-val="Árbol" onclick="selectIcon(this)">
+          <div class="big-icon">🌳</div>
+          <div class="btn-label">Árbol</div>
+        </div>
+        <div class="icon-btn" data-group="tipo" data-val="Arbusto" onclick="selectIcon(this)">
+          <div class="big-icon">🌿</div>
+          <div class="btn-label">Arbusto</div>
+        </div>
+        <div class="icon-btn" data-group="tipo" data-val="Hierba" onclick="selectIcon(this)">
+          <div class="big-icon">🌱</div>
+          <div class="btn-label">Hierba</div>
+        </div>
+        <div class="icon-btn" data-group="tipo" data-val="Trepadora" onclick="selectIcon(this)">
+          <div class="big-icon">🍃</div>
+          <div class="btn-label">Trepadora</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🌸</span> ¿Qué tiene en este momento?</div>
+      <div class="icon-grid two-col" id="estructurasGrid">
+        <div class="icon-btn" data-group="estructuras" data-val="Flores" onclick="selectIcon(this)">
+          <div class="big-icon">🌸</div>
+          <div class="btn-label">Flores</div>
+        </div>
+        <div class="icon-btn" data-group="estructuras" data-val="Frutos" onclick="selectIcon(this)">
+          <div class="big-icon">🍒</div>
+          <div class="btn-label">Frutos</div>
+        </div>
+        <div class="icon-btn" data-group="estructuras" data-val="Flores y frutos" onclick="selectIcon(this)">
+          <div class="big-icon">🌺</div>
+          <div class="btn-label">Flores y frutos</div>
+        </div>
+        <div class="icon-btn" data-group="estructuras" data-val="Solo hojas" onclick="selectIcon(this)">
+          <div class="big-icon">🍀</div>
+          <div class="btn-label">Solo hojas</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🍂</span> Forma de la hoja</div>
+      <div class="leaf-grid" id="hojaGrid">
+
+        <div class="leaf-btn" data-group="hoja" data-val="Lanceolada" onclick="selectLeaf(this)">
+          <svg class="leaf-svg" viewBox="0 0 36 36" fill="none">
+            <ellipse cx="18" cy="18" rx="5" ry="14" fill="#7aab8a" opacity="0.7"/>
+            <line x1="18" y1="4" x2="18" y2="32" stroke="#3D6B4F" stroke-width="1" stroke-dasharray="2,1"/>
+          </svg>
+          <span class="leaf-name">Lanceolada<br><span style="font-size:10px;opacity:0.6">En forma de lanza</span></span>
+        </div>
+
+        <div class="leaf-btn" data-group="hoja" data-val="Cordada" onclick="selectLeaf(this)">
+          <svg class="leaf-svg" viewBox="0 0 36 36" fill="none">
+            <path d="M18 30 C8 22 4 14 8 8 C10 4 14 4 18 8 C22 4 26 4 28 8 C32 14 28 22 18 30Z" fill="#7aab8a" opacity="0.7"/>
+            <line x1="18" y1="8" x2="18" y2="30" stroke="#3D6B4F" stroke-width="1" stroke-dasharray="2,1"/>
+          </svg>
+          <span class="leaf-name">Cordada<br><span style="font-size:10px;opacity:0.6">En forma de corazón</span></span>
+        </div>
+
+        <div class="leaf-btn" data-group="hoja" data-val="Orbicular" onclick="selectLeaf(this)">
+          <svg class="leaf-svg" viewBox="0 0 36 36" fill="none">
+            <circle cx="18" cy="18" r="12" fill="#7aab8a" opacity="0.7"/>
+            <line x1="18" y1="6" x2="18" y2="30" stroke="#3D6B4F" stroke-width="1" stroke-dasharray="2,1"/>
+            <line x1="6" y1="18" x2="30" y2="18" stroke="#3D6B4F" stroke-width="0.7" stroke-dasharray="2,1"/>
+          </svg>
+          <span class="leaf-name">Orbicular<br><span style="font-size:10px;opacity:0.6">Redonda</span></span>
+        </div>
+
+        <div class="leaf-btn" data-group="hoja" data-val="Linear" onclick="selectLeaf(this)">
+          <svg class="leaf-svg" viewBox="0 0 36 36" fill="none">
+            <ellipse cx="18" cy="18" rx="3" ry="14" fill="#7aab8a" opacity="0.7"/>
+            <line x1="18" y1="4" x2="18" y2="32" stroke="#3D6B4F" stroke-width="1" stroke-dasharray="2,1"/>
+          </svg>
+          <span class="leaf-name">Linear<br><span style="font-size:10px;opacity:0.6">Alargada y estrecha</span></span>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🎨</span> Color predominante</div>
+      <div class="color-row" id="colorRow">
+        <div class="color-dot" style="background:#2d5a1b" data-color="#2d5a1b" data-name="Verde oscuro" onclick="selectColor(this)" title="Verde oscuro"></div>
+        <div class="color-dot" style="background:#5a9e3a" data-color="#5a9e3a" data-name="Verde vivo" onclick="selectColor(this)" title="Verde vivo"></div>
+        <div class="color-dot" style="background:#a8d878" data-color="#a8d878" data-name="Verde claro" onclick="selectColor(this)" title="Verde claro"></div>
+        <div class="color-dot" style="background:#c8e68a" data-color="#c8e68a" data-name="Verde amarillo" onclick="selectColor(this)" title="Verde amarillo"></div>
+        <div class="color-dot" style="background:#e8c94a" data-color="#e8c94a" data-name="Amarillo" onclick="selectColor(this)" title="Amarillo"></div>
+        <div class="color-dot" style="background:#d4703a" data-color="#d4703a" data-name="Naranja" onclick="selectColor(this)" title="Naranja"></div>
+        <div class="color-dot" style="background:#9b3a3a" data-color="#9b3a3a" data-name="Rojo" onclick="selectColor(this)" title="Rojo"></div>
+        <div class="color-dot" style="background:#7a4a8a" data-color="#7a4a8a" data-name="Morado" onclick="selectColor(this)" title="Morado"></div>
+        <div class="color-dot" style="background:#f5f0e0" data-color="#f5f0e0" data-name="Crema / Blanco" onclick="selectColor(this)" title="Crema/Blanco" style="border:2px solid #c8b898"></div>
+        <div class="color-dot" style="background:#4a3220" data-color="#4a3220" data-name="Café / Marrón" onclick="selectColor(this)" title="Café"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ──────── STEP 4: REFLEXIÓN ──────── -->
+  <div class="step-view" id="step4">
+    <div class="step-header">
+      <div class="step-num">Paso 4 de 4</div>
+      <div class="step-title">Tu mirada</div>
+      <div class="step-desc">Humboldt decía que la naturaleza habla al que sabe escuchar.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">✍️</span> Reflexión de Campo</div>
+      <div class="form-group">
+        <label>¿Por qué decidiste fotografiar esta planta?</label>
+        <textarea id="reflexion" placeholder="¿Qué fue lo que te llamó la atención? ¿Su color, su forma, su tamaño, su olor, dónde estaba, cómo te hizo sentir?&#10;&#10;No hay respuesta incorrecta, este es tu diario de campo…"></textarea>
+      </div>
+      <p class="helper-text">💭 Esta reflexión es la parte más valiosa de tu ficha botánica.</p>
+    </div>
+
+    <div class="card" style="background: var(--green-mist); border-color: var(--green-light);">
+      <div class="card-title" style="color:var(--green-forest)"><span class="icon">📍</span> Datos del ecosistema</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="ficha-tag" style="width:fit-content">🏔️ Altitud: <strong>2.150 m.s.n.m.</strong></div>
+        <div class="ficha-tag" style="width:fit-content">🌿 Ecosistema: <strong>Bosque Andino</strong></div>
+        <div class="ficha-tag" style="width:fit-content">📅 Fecha: <strong id="fechaDisplay"></strong></div>
+      </div>
+      <p class="helper-text" style="margin-top:10px">Estos datos se incluirán automáticamente en tu ficha.</p>
+    </div>
+  </div>
+
+  <!-- ──────── STEP 5: FICHA ──────── -->
+  <div class="step-view" id="step5">
+    <div class="step-header">
+      <div class="step-num">¡Listo! Tu ficha botánica</div>
+      <div class="step-title">Lámina de Campo</div>
+      <div class="step-desc">En la tradición de los naturalistas del siglo XIX.</div>
+    </div>
+
+    <div id="fichaPreview"></div>
+
+    <div style="margin-top:16px;text-align:center;">
+      <p style="font-family:var(--fine);font-size:12px;color:var(--text-light);font-style:italic;margin-bottom:12px;">
+        📲 La imagen se guardará en la galería de tu dispositivo
+      </p>
+    </div>
+  </div>
+
+</main>
+
+<!-- BOTTOM NAVIGATION -->
+<div class="bottom-nav" id="bottomNav">
+  <button class="btn btn-secondary" id="btnBack" onclick="prevStep()" style="display:none">← Atrás</button>
+  <button class="btn btn-primary" id="btnNext" onclick="nextStep()">Continuar →</button>
+  <button class="btn btn-gold" id="btnDownload" onclick="downloadFicha()" style="display:none">⬇ Descargar PNG</button>
+  <button class="btn btn-secondary btn-sm" id="btnNew" onclick="newFicha()" style="display:none">Nueva ficha</button>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────
+const state = {
+  step: 1,
+  photo: null,
+  studentName: '',
+  plantName: '',
+  zona: '',
+  tipo: '',
+  estructuras: '',
+  hoja: '',
+  color: '',
+  colorName: '',
+  reflexion: ''
+};
+
+let deferredInstallPrompt = null;
+
+// ── SERVICE WORKER ─────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW:', e));
+}
+
+// ── INSTALL ────────────────────────────────────────────────────────
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  document.getElementById('installBanner').classList.add('show');
+});
+
+function installApp() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(() => {
+    deferredInstallPrompt = null;
+    document.getElementById('installBanner').classList.remove('show');
+  });
+}
+
+// ── SPLASH ─────────────────────────────────────────────────────────
+function hideSplash() {
+  document.getElementById('splash').classList.add('hidden');
+  setTimeout(() => document.getElementById('splash').remove(), 700);
+}
+setTimeout(hideSplash, 3500);
+
+// ── DATE ──────────────────────────────────────────────────────────
+function formatDate() {
+  const d = new Date();
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return `${d.getDate()} de ${months[d.getMonth()]} de ${d.getFullYear()}`;
+}
+document.getElementById('fechaDisplay').textContent = formatDate();
+
+// ── PHOTO ─────────────────────────────────────────────────────────
+function handlePhoto(e) {
+  const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = function(e) {
-    fotoDataURL = e.target.result;
-    const preview = document.getElementById('previewFoto');
-    preview.src = fotoDataURL;
-    preview.style.display = 'block';
-    document.getElementById('uploadIcono').style.display = 'none';
-    document.getElementById('uploadTexto').style.display = 'none';
-    document.getElementById('uploadOverlay').style.display = 'block';
-    document.getElementById('uploadArea').classList.add('tiene-foto');
+  reader.onload = ev => {
+    state.photo = ev.target.result;
+    const zone = document.getElementById('photoZone');
+    zone.classList.add('has-photo');
+    // Show image
+    zone.querySelector('#photoIcon').style.display = 'none';
+    zone.querySelector('#photoText').style.display = 'none';
+    zone.querySelector('#photoSub').style.display = 'none';
+    let img = zone.querySelector('img');
+    if (!img) { img = document.createElement('img'); zone.insertBefore(img, zone.firstChild); }
+    img.src = state.photo;
+    showToast('📷 ¡Foto capturada!');
   };
   reader.readAsDataURL(file);
 }
 
-function obtenerColoresSeleccionados() {
-  const checks = document.querySelectorAll('.chip-check input[type="checkbox"]:checked');
-  return Array.from(checks).map(c => c.value);
+// ── ICON SELECTORS ────────────────────────────────────────────────
+function selectIcon(el) {
+  const group = el.dataset.group;
+  document.querySelectorAll(`[data-group="${group}"]`).forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  state[group] = el.dataset.val;
 }
 
-function generarFicha() {
-  const nombreComun = document.getElementById('nombreComun').value.trim();
-  if (!nombreComun) {
-    alert('El nombre común de la planta es obligatorio.');
-    document.getElementById('nombreComun').focus();
-    return;
+function selectLeaf(el) {
+  document.querySelectorAll('[data-group="hoja"]').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  state.hoja = el.dataset.val;
+}
+
+function selectColor(el) {
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+  state.color = el.dataset.color;
+  state.colorName = el.dataset.name;
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────
+function updateStepUI() {
+  const s = state.step;
+  // Views
+  document.querySelectorAll('.step-view').forEach((v, i) => {
+    v.classList.toggle('active', i + 1 === s);
+  });
+  // Dots
+  for (let i = 1; i <= 5; i++) {
+    const dot = document.getElementById(`dot${i}`);
+    dot.classList.remove('active','done');
+    if (i < s) dot.classList.add('done');
+    else if (i === s) dot.classList.add('active');
   }
-
-  const nombreCientifico = document.getElementById('nombreCientifico').value.trim();
-  const familia = document.getElementById('familia').value.trim();
-  const division = document.getElementById('division').value;
-  const tipoPlanta = document.getElementById('tipoPlanta').value;
-  const formaHoja = document.getElementById('formaHoja').value;
-  const bordeHoja = document.getElementById('bordeHoja').value;
-  const altura = document.getElementById('altura').value;
-  const lugar = document.getElementById('lugar').value.trim();
-  const fecha = document.getElementById('fecha').value;
-  const habitat = document.getElementById('habitat').value;
-  const altitud = document.getElementById('altitud').value;
-  const exposicion = document.getElementById('exposicion').value;
-  const usos = document.getElementById('usos').value.trim();
-  const observaciones = document.getElementById('observaciones').value.trim();
-  const colector = document.getElementById('colector').value.trim();
-  const institucion = document.getElementById('institucion').value.trim();
-  const colores = obtenerColoresSeleccionados();
-
-  // Número de ficha
-  const numStr = 'HB-' + String(fichaCount).padStart(3, '0');
-  document.getElementById('f-num').textContent = numStr;
-
-  // Encabezado
-  document.getElementById('f-nombreComun').childNodes[0].textContent = nombreComun + ' ';
-  document.getElementById('f-nombreCientifico').textContent = nombreCientifico ? nombreCientifico : '';
-
-  // Fecha formateada
-  if (fecha) {
-    const d = new Date(fecha + 'T12:00:00');
-    const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('f-fecha').textContent = d.toLocaleDateString('es-CO', opciones);
-  } else {
-    document.getElementById('f-fecha').textContent = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+  // Lines
+  for (let i = 1; i <= 4; i++) {
+    const line = document.getElementById(`line${i}${i+1}`);
+    if (line) line.classList.toggle('done', i < s);
   }
+  // Buttons
+  document.getElementById('btnBack').style.display = s > 1 ? 'flex' : 'none';
+  document.getElementById('btnNext').style.display = s < 5 ? 'flex' : 'none';
+  document.getElementById('btnDownload').style.display = s === 5 ? 'flex' : 'none';
+  document.getElementById('btnNew').style.display = s === 5 ? 'flex' : 'none';
 
-  // Foto
-  const fotoContenedor = document.getElementById('f-fotoContenedor');
-  if (fotoDataURL) {
-    fotoContenedor.innerHTML = '<img class="ficha-foto" src="' + fotoDataURL + '" alt="' + nombreComun + '">';
-  } else {
-    fotoContenedor.innerHTML = '<div class="ficha-foto-placeholder"><span>🌿</span><span>Sin fotografía</span></div>';
+  if (s === 5) {
+    document.getElementById('btnNext').style.display = 'none';
+    buildFicha();
   }
+}
 
-  // Campos
-  document.getElementById('f-familia').textContent = familia || '—';
-  document.getElementById('f-division').textContent = division || '—';
-  document.getElementById('f-tipo').textContent = tipoPlanta || '—';
-  document.getElementById('f-altura').textContent = altura || '—';
-  document.getElementById('f-formaHoja').textContent = formaHoja || '—';
-  document.getElementById('f-bordeHoja').textContent = bordeHoja || '—';
-  document.getElementById('f-lugar').textContent = lugar || '—';
-  document.getElementById('f-habitat').textContent = habitat || '—';
-  document.getElementById('f-altitud').textContent = altitud ? altitud + ' m.s.n.m.' : '—';
-  document.getElementById('f-exposicion').textContent = exposicion || '—';
-  document.getElementById('f-usos').textContent = usos || '—';
-  document.getElementById('f-observaciones').textContent = observaciones || '—';
-  document.getElementById('f-colector').textContent = colector ? 'Colector: ' + colector : 'Colector: —';
-  document.getElementById('f-institucion').textContent = institucion || '—';
+function nextStep() {
+  if (!validateStep()) return;
+  if (state.step < 5) { state.step++; updateStepUI(); window.scrollTo(0,0); }
+}
 
-  // Colores como tags
-  const coloresEl = document.getElementById('f-colores');
-  coloresEl.innerHTML = '';
-  if (colores.length > 0) {
-    colores.forEach(c => {
-      const tag = document.createElement('span');
-      tag.className = 'tag-ficha';
-      tag.textContent = c;
-      coloresEl.appendChild(tag);
+function prevStep() {
+  if (state.step > 1) { state.step--; updateStepUI(); window.scrollTo(0,0); }
+}
+
+function validateStep() {
+  const s = state.step;
+  if (s === 1) {
+    // Photo optional but encouraged
+    return true;
+  }
+  if (s === 2) {
+    const name = document.getElementById('studentName').value.trim();
+    const plant = document.getElementById('plantName').value.trim();
+    const zona = document.getElementById('zona').value;
+    if (!name) { showToast('✏️ Por favor escribe tu nombre'); return false; }
+    if (!plant) { showToast('🌿 ¿Cómo se llama la planta?'); return false; }
+    if (!zona) { showToast('📍 Selecciona la zona EIA'); return false; }
+    state.studentName = name;
+    state.plantName = plant;
+    state.zona = zona;
+  }
+  return true;
+}
+
+// ── BUILD FICHA ────────────────────────────────────────────────────
+function buildFicha() {
+  state.studentName = document.getElementById('studentName').value;
+  state.plantName = document.getElementById('plantName').value;
+  state.zona = document.getElementById('zona').value;
+  state.reflexion = document.getElementById('reflexion').value;
+
+  const fichaId = 'EIA-' + Date.now().toString(36).toUpperCase().slice(-5);
+  const fecha = formatDate();
+
+  const colorSwatch = state.color
+    ? `<span class="ficha-color-dot" style="background:${state.color};border:1px solid rgba(0,0,0,0.2)"></span>${state.colorName}`
+    : '—';
+
+  const photoSection = state.photo
+    ? `<img class="ficha-photo" src="${state.photo}" alt="Foto de la planta" crossorigin="anonymous" />`
+    : `<div class="ficha-photo-placeholder">🌿</div>`;
+
+  const tipoEmojis = { 'Árbol':'🌳', 'Arbusto':'🌿', 'Hierba':'🌱', 'Trepadora':'🍃' };
+  const estructurasEmojis = { 'Flores':'🌸', 'Frutos':'🍒', 'Flores y frutos':'🌺', 'Solo hojas':'🍀' };
+
+  const html = `
+    <div class="ficha-container" id="fichaCard">
+      <div class="ficha-header">
+        <div class="ficha-header-top">
+          <div class="ficha-institution">Universidad EIA · Herbario de Campo</div>
+          <div class="ficha-num">№ ${fichaId}</div>
+        </div>
+        <div class="ficha-title">${state.plantName || 'Planta sin nombre'}</div>
+        <div class="ficha-subtitle">Especimen documentado en recorrido de campo</div>
+        <div class="ficha-header-ornament">
+          <div class="ficha-badge">🏔️ 2.150 m.s.n.m.</div>
+          <div class="ficha-badge">🌿 Bosque Andino</div>
+          ${state.zona ? `<div class="ficha-badge">📍 ${state.zona}</div>` : ''}
+        </div>
+      </div>
+
+      ${photoSection}
+
+      <div class="ficha-body">
+        <div class="ficha-plant-name">${state.plantName || 'Planta sin identificar'}</div>
+        <div class="ficha-collector">Colectado por: <strong>${state.studentName || 'Estudiante EIA'}</strong> · ${fecha}</div>
+
+        <div class="ficha-row">
+          ${state.tipo ? `<div class="ficha-tag">${tipoEmojis[state.tipo] || '🌱'} ${state.tipo}</div>` : ''}
+          ${state.estructuras ? `<div class="ficha-tag">${estructurasEmojis[state.estructuras] || '🍀'} ${state.estructuras}</div>` : ''}
+          ${state.hoja ? `<div class="ficha-tag">🍂 Hoja ${state.hoja}</div>` : ''}
+          ${state.color ? `<div class="ficha-tag"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${state.color};margin-right:4px;border:1px solid rgba(0,0,0,0.1)"></span>${state.colorName}</div>` : ''}
+        </div>
+
+        ${state.reflexion ? `
+        <div class="ficha-divider"></div>
+        <div class="ficha-section-title">✍️ Reflexión de campo</div>
+        <div class="ficha-reflexion">"${state.reflexion}"</div>
+        ` : ''}
+      </div>
+
+      <div class="ficha-footer">
+        <div class="ficha-footer-data">
+          📅 ${fecha}<br>
+          📍 ${state.zona || 'Campus EIA'}<br>
+          🌿 Ecosistema: Bosque Andino
+        </div>
+        <div class="ficha-footer-logo">
+          Herbario EIA
+          <span>Universidad EIA · Envigado</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const preview = document.getElementById('fichaPreview');
+  preview.innerHTML = html;
+  preview.classList.add('active');
+}
+
+// ── DOWNLOAD ──────────────────────────────────────────────────────
+async function downloadFicha() {
+  const card = document.getElementById('fichaCard');
+  if (!card) return;
+  showToast('⏳ Generando imagen…');
+  try {
+    const canvas = await html2canvas(card, {
+      scale: 2.5,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#F5F0E8',
+      logging: false
     });
-  } else {
-    coloresEl.innerHTML = '<span style="font-size:0.78rem; color: rgba(90,80,64,0.4); font-family: IBM Plex Mono, monospace;">—</span>';
-  }
-
-  // Mostrar ficha
-  document.getElementById('fichaEstadoInicial').style.display = 'none';
-  document.getElementById('fichaReal').style.display = 'block';
-
-  // Scroll a la ficha en mobile
-  if (window.innerWidth <= 760) {
-    document.getElementById('fichaReal').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
-
-function limpiarFicha() {
-  document.getElementById('fichaEstadoInicial').style.display = 'flex';
-  document.getElementById('fichaReal').style.display = 'none';
-  fichaCount++;
-}
-
-function descargarFicha() {
-  const ficha = document.getElementById('ficha');
-  html2canvas(ficha, {
-    scale: 2,
-    backgroundColor: '#f5f0e8',
-    useCORS: true,
-    logging: false
-  }).then(function(canvas) {
     const link = document.createElement('a');
-    const nombre = document.getElementById('nombreComun').value.trim() || 'espécimen';
-    link.download = 'herbario-' + nombre.toLowerCase().replace(/\s+/g, '-') + '.png';
+    const name = (state.plantName || 'planta').replace(/\s+/g,'-').toLowerCase();
+    link.download = `ficha-botanica-${name}-eia.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
-  }).catch(function() {
-    alert('No se pudo generar la imagen. Intenta usar la opción Imprimir → Guardar como PDF.');
-  });
+    showToast('✅ ¡Ficha guardada en tu dispositivo!');
+  } catch(e) {
+    showToast('⚠️ Error al generar imagen. Intenta de nuevo.');
+    console.error(e);
+  }
 }
 
-// Fecha por defecto = hoy
-document.getElementById('fecha').valueAsDate = new Date();
+// ── NEW FICHA ─────────────────────────────────────────────────────
+function newFicha() {
+  Object.assign(state, {
+    step:1, photo:null, studentName:'', plantName:'', zona:'',
+    tipo:'', estructuras:'', hoja:'', color:'', colorName:'', reflexion:''
+  });
+  document.getElementById('studentName').value = '';
+  document.getElementById('plantName').value = '';
+  document.getElementById('zona').value = '';
+  document.getElementById('reflexion').value = '';
+  document.querySelectorAll('.icon-btn, .leaf-btn, .color-dot').forEach(el => el.classList.remove('selected'));
+  // Reset photo
+  const zone = document.getElementById('photoZone');
+  zone.classList.remove('has-photo');
+  const img = zone.querySelector('img');
+  if (img) img.remove();
+  ['photoIcon','photoText','photoSub'].forEach(id => document.getElementById(id).style.display = '');
+  document.getElementById('fichaPreview').classList.remove('active');
+  document.getElementById('fichaPreview').innerHTML = '';
+  updateStepUI();
+  window.scrollTo(0,0);
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+updateStepUI();
 </script>
 </body>
 </html>
