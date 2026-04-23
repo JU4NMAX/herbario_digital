@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Herbario Digital</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --verde: #2d5a27;
+    --verde-claro: #4a7c3f;
+    --crema: #f5f0e8;
+    --crema-oscura: #e8e0cc;
+    --marron: #6b4c2a;
+    --marron-claro: #c4a882;
+    --texto: #1a1a1a;
+    --texto-suave: #5a5040;
+    --borde: #b8a88a;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #1a1a0f;
+    min-height: 100vh;
+    color: var(--texto);
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(45,90,39,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(107,76,42,0.10) 0%, transparent 50%);
+  }
+
+  /* ENCABEZADO */
+  header {
+    text-align: center;
+    padding: 3rem 2rem 2rem;
+    border-bottom: 1px solid rgba(196,168,130,0.3);
+  }
+  .logo-herb {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 1rem;
+  }
+  .leaf-icon {
+    width: 44px;
+    height: 44px;
+    opacity: 0.9;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    color: var(--crema);
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+  }
+  header h1 em {
+    color: var(--marron-claro);
+    font-style: italic;
+  }
+  header p {
+    font-size: 0.9rem;
+    color: rgba(245,240,232,0.5);
+    margin-top: 0.5rem;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* LAYOUT PRINCIPAL */
+  .contenedor {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 760px) {
+    .contenedor { grid-template-columns: 1fr; gap: 1.5rem; }
+  }
+
+  /* PANEL FORMULARIO */
+  .panel-form {
+    background: rgba(245,240,232,0.04);
+    border: 1px solid rgba(196,168,130,0.2);
+    border-radius: 4px;
+    padding: 2rem;
+  }
+
+  .panel-form h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--marron-claro);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(196,168,130,0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* UPLOAD FOTO */
+  .upload-area {
+    border: 2px dashed rgba(196,168,130,0.4);
+    border-radius: 4px;
+    padding: 2rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .upload-area:hover {
+    border-color: var(--marron-claro);
+    background: rgba(196,168,130,0.05);
+  }
+  .upload-area.tiene-foto {
+    border-style: solid;
+    border-color: var(--verde-claro);
+    padding: 0;
+  }
+  .upload-area img.preview {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 3px;
+    display: block;
+  }
+  .upload-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .upload-icono {
+    font-size: 2rem;
+    opacity: 0.4;
+  }
+  .upload-texto {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: rgba(245,240,232,0.4);
+    letter-spacing: 0.05em;
+  }
+  .upload-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(26,26,15,0.7);
+    padding: 6px;
+    font-size: 0.7rem;
+    color: var(--marron-claro);
+    font-family: 'IBM Plex Mono', monospace;
+    text-align: center;
+  }
+
+  /* CAMPOS */
+  .campo {
+    margin-bottom: 1rem;
+  }
+  .campo label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(196,168,130,0.8);
+    margin-bottom: 5px;
+  }
+  .campo input,
+  .campo select,
+  .campo textarea {
+    width: 100%;
+    background: rgba(245,240,232,0.05);
+    border: 1px solid rgba(196,168,130,0.25);
+    border-radius: 3px;
+    padding: 8px 10px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.88rem;
+    color: var(--crema);
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+  .campo input:focus,
+  .campo select:focus,
+  .campo textarea:focus {
+    border-color: var(--marron-claro);
+    background: rgba(196,168,130,0.06);
+  }
+  .campo textarea {
+    resize: vertical;
+    min-height: 70px;
+    line-height: 1.5;
+  }
+  .campo select option {
+    background: #2a2018;
+    color: var(--crema);
+  }
+
+  .fila-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .separador {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem;
+    color: var(--marron-claro);
+    margin: 1.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(196,168,130,0.15);
+    font-style: italic;
+    opacity: 0.8;
+  }
+
+  /* CHECKBOX GRUPOS */
+  .grupo-check {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip-check {
+    position: relative;
+  }
+  .chip-check input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0; height: 0;
+  }
+  .chip-check label {
+    display: inline-block;
+    padding: 4px 10px;
+    border: 1px solid rgba(196,168,130,0.3);
+    border-radius: 2px;
+    font-size: 0.75rem;
+    font-family: 'IBM Plex Mono', monospace;
+    color: rgba(245,240,232,0.5);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .chip-check input:checked + label {
+    background: var(--verde);
+    border-color: var(--verde-claro);
+    color: var(--crema);
+  }
+
+  /* BOTÓN */
+  .btn-generar {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 12px;
+    background: var(--verde);
+    border: 1px solid var(--verde-claro);
+    border-radius: 3px;
+    color: var(--crema);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-generar:hover { background: var(--verde-claro); }
+
+  /* PANEL FICHA */
+  .panel-ficha {
+    position: sticky;
+    top: 2rem;
+  }
+
+  /* LA FICHA */
+  #ficha {
+    background: var(--crema);
+    border: 1px solid var(--borde);
+    box-shadow: 4px 4px 0 rgba(107,76,42,0.2), 8px 8px 0 rgba(107,76,42,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: var(--texto);
+    min-height: 500px;
+  }
+
+  .ficha-header {
+    background: var(--verde);
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ficha-header-left h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--crema);
+    line-height: 1.2;
+  }
+  .ficha-header-left h3 em {
+    font-size: 0.95rem;
+    font-style: italic;
+    opacity: 0.75;
+    display: block;
+    font-weight: 400;
+  }
+  .ficha-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: rgba(245,240,232,0.5);
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  .ficha-foto {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+    border-bottom: 2px solid var(--borde);
+  }
+  .ficha-foto-placeholder {
+    width: 100%;
+    height: 180px;
+    background: var(--crema-oscura);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 2px solid var(--borde);
+    color: rgba(90,80,64,0.4);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+  }
+
+  .ficha-body {
+    padding: 1.2rem 1.5rem;
+  }
+
+  .ficha-seccion {
+    margin-bottom: 1.2rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--crema-oscura);
+  }
+  .ficha-seccion:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+  .ficha-seccion-titulo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--verde);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ficha-seccion-titulo::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--crema-oscura);
+  }
+
+  .ficha-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+  }
+  .ficha-campo {
+    font-size: 0.82rem;
+  }
+  .ficha-campo .etiqueta {
+    font-size: 0.65rem;
+    color: var(--texto-suave);
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .ficha-campo .valor {
+    color: var(--texto);
+    font-weight: 500;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  .ficha-campo .valor:empty::after {
+    content: '—';
+    opacity: 0.3;
+  }
+
+  .ficha-full .valor {
+    line-height: 1.6;
+    font-size: 0.83rem;
+  }
+
+  .tags-ficha {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 3px;
+  }
+  .tag-ficha {
+    background: var(--crema-oscura);
+    border: 1px solid var(--borde);
+    border-radius: 2px;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    color: var(--marron);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .ficha-footer {
+    background: var(--crema-oscura);
+    padding: 0.7rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--borde);
+  }
+  .ficha-footer span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--texto-suave);
+    opacity: 0.7;
+  }
+  .ficha-footer .sello {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--verde);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.3;
+  }
+
+  /* BOTONES ACCIÓN */
+  .acciones {
+    display: flex;
+    gap: 8px;
+    margin-top: 1rem;
+  }
+  .btn-accion {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1px solid rgba(196,168,130,0.3);
+    border-radius: 3px;
+    background: transparent;
+    color: rgba(245,240,232,0.6);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .btn-accion:hover {
+    border-color: var(--marron-claro);
+    color: var(--crema);
+    background: rgba(196,168,130,0.08);
+  }
+  .btn-accion.primario {
+    background: rgba(45,90,39,0.3);
+    border-color: var(--verde-claro);
+    color: var(--crema);
+  }
+  .btn-accion.primario:hover { background: rgba(45,90,39,0.5); }
+
+  .estado-inicial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 400px;
+    text-align: center;
+    padding: 2rem;
+  }
+  .estado-inicial svg { opacity: 0.12; }
+  .estado-inicial p {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: rgba(245,240,232,0.3);
+    letter-spacing: 0.06em;
+    line-height: 1.8;
+  }
+
+  @media print {
+    body { background: white; }
+    .panel-form, .panel-form h2, header, .acciones { display: none !important; }
+    .contenedor { grid-template-columns: 1fr; }
+    #ficha { box-shadow: none; }
+    .panel-ficha { position: static; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-herb">
+    <svg class="leaf-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22 4C22 4 8 10 8 24C8 32 14.5 38 22 38C29.5 38 36 32 36 24C36 10 22 4 22 4Z" fill="#4a7c3f" opacity="0.8"/>
+      <path d="M22 38V18" stroke="#2d5a27" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M22 26C22 26 16 22 14 18" stroke="#2d5a27" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+      <path d="M22 22C22 22 28 18 30 14" stroke="#2d5a27" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+    </svg>
+    <h1>Herbario <em>Digital</em></h1>
+  </div>
+  <p>Registro botánico — Ficha técnica de especímenes</p>
+</header>
+
+<div class="contenedor">
+  <!-- FORMULARIO -->
+  <div class="panel-form">
+    <h2>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="1" stroke="currentColor" stroke-width="1.2"/><line x1="4" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1.2"/><line x1="4" y1="8" x2="8" y2="8" stroke="currentColor" stroke-width="1.2"/></svg>
+      Registro del espécimen
+    </h2>
+
+    <!-- FOTO -->
+    <div class="upload-area" id="uploadArea">
+      <input type="file" accept="image/*" id="inputFoto" onchange="cargarFoto(event)">
+      <div class="upload-icono" id="uploadIcono">🌿</div>
+      <div class="upload-texto" id="uploadTexto">Haz clic para subir la foto de la planta</div>
+      <img class="preview" id="previewFoto" style="display:none;" alt="Espécimen">
+      <div class="upload-overlay" id="uploadOverlay" style="display:none;">Click para cambiar foto</div>
+    </div>
+
+    <!-- IDENTIFICACIÓN -->
+    <div class="separador">I. Identificación taxonómica</div>
+    <div class="campo">
+      <label>Nombre común *</label>
+      <input type="text" id="nombreComun" placeholder="Ej: Helecho arbóreo, Orquídea">
+    </div>
+    <div class="campo">
+      <label>Nombre científico (especie)</label>
+      <input type="text" id="nombreCientifico" placeholder="Ej: Cyathea caracasana">
+    </div>
+    <div class="fila-2">
+      <div class="campo">
+        <label>Familia botánica</label>
+        <input type="text" id="familia" placeholder="Ej: Cyatheaceae">
+      </div>
+      <div class="campo">
+        <label>División / Clase</label>
+        <select id="division">
+          <option value="">Seleccionar</option>
+          <option>Angiospermas</option>
+          <option>Gimnospermas</option>
+          <option>Pteridofitas (helechos)</option>
+          <option>Briofitas (musgos)</option>
+          <option>Líquenes</option>
+          <option>Otro</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- MORFOLOGÍA -->
+    <div class="separador">II. Características morfológicas</div>
+    <div class="campo">
+      <label>Tipo de planta</label>
+      <select id="tipoPlanta">
+        <option value="">Seleccionar</option>
+        <option>Árbol</option>
+        <option>Arbusto</option>
+        <option>Hierba</option>
+        <option>Trepadora / Liana</option>
+        <option>Epífita</option>
+        <option>Acuática</option>
+        <option>Parásita</option>
+        <option>Suculenta / Cactus</option>
+        <option>Hongo / Musgo / Liquen</option>
+      </select>
+    </div>
+    <div class="campo">
+      <label>Color de flores / frutos</label>
+      <div class="grupo-check">
+        <div class="chip-check"><input type="checkbox" id="c-blanco" value="Blanco"><label for="c-blanco">Blanco</label></div>
+        <div class="chip-check"><input type="checkbox" id="c-amarillo" value="Amarillo"><label for="c-amarillo">Amarillo</label></div>
+        <div class="chip-check"><input type="checkbox" id="c-naranja" value="Naranja"><label for="c-naranja">Naranja</label></div>
+        <div class="chip-check"><input type="checkbox" id="c-rojo" value="Rojo"><label for="c-rojo">Rojo</label></div>
+        <div class="chip-check"><input type="checkbox" id="c-rosado" value="Rosado"><label for="c-rosado">Rosado</label></div>
+        <div class="chip-check"><input type="checkbox" id="c-morado" value="Morado"><label for="c-morado">Morado</label></div>
+        <div class="chip-check"><input type="checkbox" id="c-azul" value="Azul"><label for="c-azul">Azul</label></div>
+        <div class="chip-check"><input type="checkbox" id="c-verde" value="Verde"><label for="c-verde">Verde</label></div>
+        <div class="chip-check"><input type="checkbox" id="c-cafe" value="Café"><label for="c-cafe">Café</label></div>
+        <div class="chip-check"><input type="checkbox" id="c-sin" value="Sin flor/fruto"><label for="c-sin">Sin flor/fruto</label></div>
+      </div>
+    </div>
+    <div class="fila-2">
+      <div class="campo">
+        <label>Forma de hoja</label>
+        <select id="formaHoja">
+          <option value="">Seleccionar</option>
+          <option>Lanceolada</option>
+          <option>Ovalada / Elíptica</option>
+          <option>Redondeada</option>
+          <option>Lineal</option>
+          <option>Palmada / Lobulada</option>
+          <option>Pinnada (compuesta)</option>
+          <option>Acicular (aguja)</option>
+          <option>Sin hojas visibles</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label>Borde de hoja</label>
+        <select id="bordeHoja">
+          <option value="">Seleccionar</option>
+          <option>Entero (liso)</option>
+          <option>Serrado (dentado)</option>
+          <option>Lobulado</option>
+          <option>Ondulado</option>
+          <option>Espinoso</option>
+        </select>
+      </div>
+    </div>
+    <div class="campo">
+      <label>Altura aproximada</label>
+      <select id="altura">
+        <option value="">Seleccionar</option>
+        <option>Menos de 20 cm</option>
+        <option>20 cm – 1 m</option>
+        <option>1 – 5 m</option>
+        <option>5 – 15 m</option>
+        <option>Más de 15 m</option>
+      </select>
+    </div>
+
+    <!-- HÁBITAT -->
+    <div class="separador">III. Hábitat y recolección</div>
+    <div class="fila-2">
+      <div class="campo">
+        <label>Lugar de recolección</label>
+        <input type="text" id="lugar" placeholder="Ej: Cali, Valle del Cauca">
+      </div>
+      <div class="campo">
+        <label>Fecha</label>
+        <input type="date" id="fecha">
+      </div>
+    </div>
+    <div class="campo">
+      <label>Tipo de ecosistema / hábitat</label>
+      <select id="habitat">
+        <option value="">Seleccionar</option>
+        <option>Bosque húmedo tropical</option>
+        <option>Bosque andino / Nublado</option>
+        <option>Páramo</option>
+        <option>Zona seca / Xerofítica</option>
+        <option>Ribera de río / Pantano</option>
+        <option>Jardín / Zona urbana</option>
+        <option>Potrero / Zona intervenida</option>
+        <option>Cultivo agrícola</option>
+        <option>Otro</option>
+      </select>
+    </div>
+    <div class="fila-2">
+      <div class="campo">
+        <label>Altitud (m.s.n.m.)</label>
+        <input type="number" id="altitud" placeholder="Ej: 1000">
+      </div>
+      <div class="campo">
+        <label>Exposición solar</label>
+        <select id="exposicion">
+          <option value="">Seleccionar</option>
+          <option>Pleno sol</option>
+          <option>Semisombra</option>
+          <option>Sombra completa</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- OBSERVACIONES -->
+    <div class="separador">IV. Observaciones</div>
+    <div class="campo">
+      <label>Usos conocidos (medicinal, alimenticio, decorativo…)</label>
+      <textarea id="usos" placeholder="Ej: Sus hojas se usan para tratar infecciones respiratorias..."></textarea>
+    </div>
+    <div class="campo">
+      <label>Observaciones adicionales</label>
+      <textarea id="observaciones" placeholder="Características especiales, estado de conservación, aroma, textura..."></textarea>
+    </div>
+    <div class="campo">
+      <label>Nombre del recolector / Estudiante</label>
+      <input type="text" id="colector" placeholder="Tu nombre completo">
+    </div>
+    <div class="campo">
+      <label>Institución / Curso</label>
+      <input type="text" id="institucion" placeholder="Ej: Universidad del Valle – Botánica 2025">
+    </div>
+
+    <button class="btn-generar" onclick="generarFicha()">Generar ficha de herbario</button>
+  </div>
+
+  <!-- PANEL FICHA -->
+  <div class="panel-ficha">
+    <div id="fichaContenedor">
+      <div id="fichaEstadoInicial" class="estado-inicial">
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+          <path d="M40 8C40 8 16 20 16 44C16 60 26 70 40 70C54 70 64 60 64 44C64 20 40 8 40 8Z" fill="#4a7c3f"/>
+          <path d="M40 70V32" stroke="#2d5a27" stroke-width="3" stroke-linecap="round"/>
+          <path d="M40 48C40 48 30 42 26 34" stroke="#2d5a27" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+          <path d="M40 38C40 38 50 32 54 24" stroke="#2d5a27" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+        </svg>
+        <p>Completa el formulario<br>y presiona <strong style="color:rgba(196,168,130,0.6)">"Generar ficha"</strong><br>para ver tu entrada de herbario</p>
+      </div>
+      <div id="fichaReal" style="display:none;">
+        <div id="ficha">
+          <div class="ficha-header">
+            <div class="ficha-header-left">
+              <h3 id="f-nombreComun">—<em id="f-nombreCientifico"></em></h3>
+            </div>
+            <div class="ficha-num">
+              <div id="f-num">HB-001</div>
+              <div id="f-fecha">—</div>
+            </div>
+          </div>
+          <div id="f-fotoContenedor">
+            <div class="ficha-foto-placeholder">
+              <span>🌿</span>
+              <span>Sin fotografía</span>
+            </div>
+          </div>
+          <div class="ficha-body">
+            <div class="ficha-seccion">
+              <div class="ficha-seccion-titulo">Taxonomía</div>
+              <div class="ficha-grid">
+                <div class="ficha-campo">
+                  <div class="etiqueta">Familia</div>
+                  <div class="valor" id="f-familia"></div>
+                </div>
+                <div class="ficha-campo">
+                  <div class="etiqueta">División</div>
+                  <div class="valor" id="f-division"></div>
+                </div>
+                <div class="ficha-campo">
+                  <div class="etiqueta">Tipo</div>
+                  <div class="valor" id="f-tipo"></div>
+                </div>
+                <div class="ficha-campo">
+                  <div class="etiqueta">Altura</div>
+                  <div class="valor" id="f-altura"></div>
+                </div>
+              </div>
+            </div>
+            <div class="ficha-seccion">
+              <div class="ficha-seccion-titulo">Morfología</div>
+              <div class="ficha-grid">
+                <div class="ficha-campo">
+                  <div class="etiqueta">Forma de hoja</div>
+                  <div class="valor" id="f-formaHoja"></div>
+                </div>
+                <div class="ficha-campo">
+                  <div class="etiqueta">Borde de hoja</div>
+                  <div class="valor" id="f-bordeHoja"></div>
+                </div>
+              </div>
+              <div class="ficha-campo" style="margin-top:8px;">
+                <div class="etiqueta">Color de flores / frutos</div>
+                <div class="tags-ficha" id="f-colores"></div>
+              </div>
+            </div>
+            <div class="ficha-seccion">
+              <div class="ficha-seccion-titulo">Recolección</div>
+              <div class="ficha-grid">
+                <div class="ficha-campo">
+                  <div class="etiqueta">Lugar</div>
+                  <div class="valor" id="f-lugar"></div>
+                </div>
+                <div class="ficha-campo">
+                  <div class="etiqueta">Altitud</div>
+                  <div class="valor" id="f-altitud"></div>
+                </div>
+                <div class="ficha-campo ficha-full" style="grid-column: span 2;">
+                  <div class="etiqueta">Hábitat</div>
+                  <div class="valor" id="f-habitat"></div>
+                </div>
+                <div class="ficha-campo">
+                  <div class="etiqueta">Exposición</div>
+                  <div class="valor" id="f-exposicion"></div>
+                </div>
+              </div>
+            </div>
+            <div class="ficha-seccion" id="seccionUsos">
+              <div class="ficha-seccion-titulo">Usos y observaciones</div>
+              <div class="ficha-campo ficha-full">
+                <div class="etiqueta">Usos conocidos</div>
+                <div class="valor" id="f-usos"></div>
+              </div>
+              <div class="ficha-campo ficha-full" style="margin-top:8px;">
+                <div class="etiqueta">Observaciones</div>
+                <div class="valor" id="f-observaciones"></div>
+              </div>
+            </div>
+          </div>
+          <div class="ficha-footer">
+            <span id="f-colector">—</span>
+            <div class="sello">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <circle cx="7" cy="7" r="5" stroke="#2d5a27" stroke-width="1.2"/>
+                <path d="M7 4v3l2 1.5" stroke="#2d5a27" stroke-width="1" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span id="f-institucion">—</span>
+          </div>
+        </div>
+        <div class="acciones">
+          <button class="btn-accion" onclick="limpiarFicha()">Limpiar</button>
+          <button class="btn-accion" onclick="window.print()">Imprimir</button>
+          <button class="btn-accion primario" onclick="descargarFicha()">Descargar imagen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+let fotoDataURL = null;
+let fichaCount = 1;
+
+function cargarFoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    fotoDataURL = e.target.result;
+    const preview = document.getElementById('previewFoto');
+    preview.src = fotoDataURL;
+    preview.style.display = 'block';
+    document.getElementById('uploadIcono').style.display = 'none';
+    document.getElementById('uploadTexto').style.display = 'none';
+    document.getElementById('uploadOverlay').style.display = 'block';
+    document.getElementById('uploadArea').classList.add('tiene-foto');
+  };
+  reader.readAsDataURL(file);
+}
+
+function obtenerColoresSeleccionados() {
+  const checks = document.querySelectorAll('.chip-check input[type="checkbox"]:checked');
+  return Array.from(checks).map(c => c.value);
+}
+
+function generarFicha() {
+  const nombreComun = document.getElementById('nombreComun').value.trim();
+  if (!nombreComun) {
+    alert('El nombre común de la planta es obligatorio.');
+    document.getElementById('nombreComun').focus();
+    return;
+  }
+
+  const nombreCientifico = document.getElementById('nombreCientifico').value.trim();
+  const familia = document.getElementById('familia').value.trim();
+  const division = document.getElementById('division').value;
+  const tipoPlanta = document.getElementById('tipoPlanta').value;
+  const formaHoja = document.getElementById('formaHoja').value;
+  const bordeHoja = document.getElementById('bordeHoja').value;
+  const altura = document.getElementById('altura').value;
+  const lugar = document.getElementById('lugar').value.trim();
+  const fecha = document.getElementById('fecha').value;
+  const habitat = document.getElementById('habitat').value;
+  const altitud = document.getElementById('altitud').value;
+  const exposicion = document.getElementById('exposicion').value;
+  const usos = document.getElementById('usos').value.trim();
+  const observaciones = document.getElementById('observaciones').value.trim();
+  const colector = document.getElementById('colector').value.trim();
+  const institucion = document.getElementById('institucion').value.trim();
+  const colores = obtenerColoresSeleccionados();
+
+  // Número de ficha
+  const numStr = 'HB-' + String(fichaCount).padStart(3, '0');
+  document.getElementById('f-num').textContent = numStr;
+
+  // Encabezado
+  document.getElementById('f-nombreComun').childNodes[0].textContent = nombreComun + ' ';
+  document.getElementById('f-nombreCientifico').textContent = nombreCientifico ? nombreCientifico : '';
+
+  // Fecha formateada
+  if (fecha) {
+    const d = new Date(fecha + 'T12:00:00');
+    const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('f-fecha').textContent = d.toLocaleDateString('es-CO', opciones);
+  } else {
+    document.getElementById('f-fecha').textContent = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  // Foto
+  const fotoContenedor = document.getElementById('f-fotoContenedor');
+  if (fotoDataURL) {
+    fotoContenedor.innerHTML = '<img class="ficha-foto" src="' + fotoDataURL + '" alt="' + nombreComun + '">';
+  } else {
+    fotoContenedor.innerHTML = '<div class="ficha-foto-placeholder"><span>🌿</span><span>Sin fotografía</span></div>';
+  }
+
+  // Campos
+  document.getElementById('f-familia').textContent = familia || '—';
+  document.getElementById('f-division').textContent = division || '—';
+  document.getElementById('f-tipo').textContent = tipoPlanta || '—';
+  document.getElementById('f-altura').textContent = altura || '—';
+  document.getElementById('f-formaHoja').textContent = formaHoja || '—';
+  document.getElementById('f-bordeHoja').textContent = bordeHoja || '—';
+  document.getElementById('f-lugar').textContent = lugar || '—';
+  document.getElementById('f-habitat').textContent = habitat || '—';
+  document.getElementById('f-altitud').textContent = altitud ? altitud + ' m.s.n.m.' : '—';
+  document.getElementById('f-exposicion').textContent = exposicion || '—';
+  document.getElementById('f-usos').textContent = usos || '—';
+  document.getElementById('f-observaciones').textContent = observaciones || '—';
+  document.getElementById('f-colector').textContent = colector ? 'Colector: ' + colector : 'Colector: —';
+  document.getElementById('f-institucion').textContent = institucion || '—';
+
+  // Colores como tags
+  const coloresEl = document.getElementById('f-colores');
+  coloresEl.innerHTML = '';
+  if (colores.length > 0) {
+    colores.forEach(c => {
+      const tag = document.createElement('span');
+      tag.className = 'tag-ficha';
+      tag.textContent = c;
+      coloresEl.appendChild(tag);
+    });
+  } else {
+    coloresEl.innerHTML = '<span style="font-size:0.78rem; color: rgba(90,80,64,0.4); font-family: IBM Plex Mono, monospace;">—</span>';
+  }
+
+  // Mostrar ficha
+  document.getElementById('fichaEstadoInicial').style.display = 'none';
+  document.getElementById('fichaReal').style.display = 'block';
+
+  // Scroll a la ficha en mobile
+  if (window.innerWidth <= 760) {
+    document.getElementById('fichaReal').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function limpiarFicha() {
+  document.getElementById('fichaEstadoInicial').style.display = 'flex';
+  document.getElementById('fichaReal').style.display = 'none';
+  fichaCount++;
+}
+
+function descargarFicha() {
+  const ficha = document.getElementById('ficha');
+  html2canvas(ficha, {
+    scale: 2,
+    backgroundColor: '#f5f0e8',
+    useCORS: true,
+    logging: false
+  }).then(function(canvas) {
+    const link = document.createElement('a');
+    const nombre = document.getElementById('nombreComun').value.trim() || 'espécimen';
+    link.download = 'herbario-' + nombre.toLowerCase().replace(/\s+/g, '-') + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }).catch(function() {
+    alert('No se pudo generar la imagen. Intenta usar la opción Imprimir → Guardar como PDF.');
+  });
+}
+
+// Fecha por defecto = hoy
+document.getElementById('fecha').valueAsDate = new Date();
+</script>
+</body>
+</html>
